@@ -18,3 +18,52 @@ targetCompatibility = JavaVersion.VERSION_1_8
 repositories {
   mavenCentral()
 }
+
+dependencies {
+  compile 'com.squareup.retrofit:retrofit:1.9.0'
+}
+
+
+import com.stanfy.helium.handler.codegen.java.constants.ConstantNameConverter
+
+import javax.lang.model.element.Modifier
+
+helium {
+  specification file('src/main/java/com/stanfy/helium/server/spec/public.api')
+
+  sourceGen {
+    def sourceOut = file("src/main/api")
+
+    entities {
+      output = file("$sourceOut")
+
+      options {
+        packageName = 'com.stanfy.hellium.server.api.data'
+
+        prettifyNames = true
+        fieldModifiers = [Modifier.PRIVATE] as Set
+        addGetters = true
+        addSetters = true
+      }
+    }
+
+    constants {
+      output = file("$sourceOut")
+
+      options {
+        packageName = 'com.stanfy.hellium.server.api.constants'
+        nameConverter = {
+          "COLUMN_${it.canonicalName.toUpperCase(Locale.US)}".toString()
+        } as ConstantNameConverter
+      }
+    }
+
+    retrofit {
+      output = file("$sourceOut")
+
+      options {
+        packageName = "com.stanfy.hellium.server.api"
+      }
+    }
+  }
+}
