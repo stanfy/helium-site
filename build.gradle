@@ -1,0 +1,20 @@
+buildscript {
+  repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'  }
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath 'com.stanfy.helium:gradle-plugin:0.8.0-SNAPSHOT'
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'helium'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+  mavenCentral()
+}
