@@ -5,7 +5,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.stanfy.helium:gradle-plugin:0.8.0-SNAPSHOT'
+    classpath 'com.stanfy.helium:gradle-plugin:0.8.1-SNAPSHOT'
     classpath 'com.google.appengine:gradle-appengine-plugin:1.9.30'
   }
 }
@@ -107,5 +107,16 @@ helium {
 
   variables {
     endpointLocation project.endpoint
+  }
+}
+
+// Add swagger spec to the war.
+afterEvaluate {
+  war {
+    dependsOn generateSwaggerSpec
+    include {
+      from file("$generateSwaggerSpec.output")
+      rename '.+\\.json', 'spec/swagger.json'
+    }
   }
 }
