@@ -1,0 +1,29 @@
+language: java
+
+jdk:
+  - oraclejdk7
+  - openjdk7
+
+sudo: false
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+env:
+  global:
+  - JAVA_OPTS=-XX:MaxPermSize=1024m
+
+git:
+  depth: 5
+
+install:
+- ./gradlew -q -s clean assemble
+- ./gradlew appengineRun &
+
+script:
+- ./gradlew -s --continue check checkApiBehaviour appengineStop
