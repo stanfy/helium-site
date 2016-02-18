@@ -16,13 +16,25 @@ apply plugin: 'appengine'
 
 repositories {
   mavenCentral()
+  ivy {
+    url 'https://github.com'
+    layout 'pattern', {
+      artifact '[organization]/[module]/archive/v[revision](.[ext])'
+    }
+  }
 }
+
+configurations { swaggerUi }
+
+def swaggerUiVersion = '2.1.4'
 
 dependencies {
   appengineSdk 'com.google.appengine:appengine-java-sdk:1.9.32'
   compile 'com.squareup.retrofit:retrofit:1.9.0'
   compile 'com.google.code.gson:gson:1.7.2'
   compile 'javax.servlet:javax.servlet-api:3.0.1'
+
+  swaggerUi "swagger-api:swagger-ui:${swaggerUiVersion}@zip"
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_7
@@ -110,13 +122,29 @@ helium {
   }
 }
 
+task unpackSwaggerUi() {
+  ext.data = configurations.swaggerUi.first()
+  ext.dest = file("$buildDir/tmp/swagger-ui")
+  inputs.file data
+  outputs.dir dest
+  doLast {
+    copy {
+      from zipTree(data)
+      into dest
+    }
+  }
+}
+
 // Add swagger spec to the war.
 afterEvaluate {
   war {
-    dependsOn generateSwaggerSpec
-    include {
-      from file("$generateSwaggerSpec.output")
-      rename '.+\\.json', 'spec/swagger.json'
+    dependsOn generateSwaggerSpec, unpackSwaggerUi
+    from file("$unpackSwaggerUi.dest/swagger-ui-$swaggerUiVersion/dist"), {
+      into 'spec/ui'
+    }
+    from file("$generateSwaggerSpec.output"), {
+      into 'spec'
+      rename '.+\\.json', 'public.json'
     }
   }
 }

@@ -9,6 +9,6 @@
     </system-properties>
 
     <static-files>
-        <include path="/spec/swagger.json" />
+        <include path="/spec/**" />
     </static-files>
 </appengine-web-app>
