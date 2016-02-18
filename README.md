@@ -1,17 +1,23 @@
 Server for testing Hellium features
 -----------------------------------
 
-
 **Development:**
 
-To run and test local server:
+To run development server execute `./gradlew appengineRun` . 
 
-1. Uncomment endpoint in api specification file.
-2. Run gradle command with `./gradlew appengineRun`
-3. Run Helium tests with `./gradlew checkApiBeh`
+This will start server on *localhost:8080* .
+
+ 
+**Testing**
+
+By default when you run `gw checkAPiBehaviour` it executes all tests on *localhost:8080* endpoint.
+
+To use CloudEngine endpoint you should pass a parameter `endpoint`. 
+
+For example, `gw chApiBeh -Pendpoint=http://.....` 
 
 
-**Deploy:**
+**Deploy**
 
 To upload and deploy new server intance on CloudEngine run 
 
