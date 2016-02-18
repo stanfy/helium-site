@@ -6,33 +6,71 @@ buildscript {
 
   dependencies {
     classpath 'com.stanfy.helium:gradle-plugin:0.8.0-SNAPSHOT'
+    classpath 'com.google.appengine:gradle-appengine-plugin:1.9.30'
   }
 }
 
-apply plugin: 'java'
 apply plugin: 'helium'
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+apply plugin: 'war'
+apply plugin: 'appengine'
 
 repositories {
   mavenCentral()
 }
 
 dependencies {
+  appengineSdk 'com.google.appengine:appengine-java-sdk:1.9.32'
   compile 'com.squareup.retrofit:retrofit:1.9.0'
+  compile 'com.google.code.gson:gson:1.7.2'
+  compile 'javax.servlet:javax.servlet-api:3.0.1'
 }
 
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
 
+ext {
+  // Distinguish development end CloudEngine endpoints.
+  if (project.hasProperty('endpoint')) {
+    if (!project.endpoint.startsWith('http')) {
+      throw new GradleException("Bad endpoint name '$endpoint'. Should start with 'http://...'")
+    }
+  } else {
+    endpoint = 'http://localhost:8080'
+  }
+}
+
+appengine {
+
+  downloadSdk = true
+
+  appcfg {
+    oauth2 = true
+  }
+
+  app {
+    id = 'helium-1222'
+  }
+
+  update {
+    useJava7 = true
+  }
+
+  logs {
+    severity = 0
+    outputFile = file('debugLogs.txt')
+  }
+}
+
+////// Hellium api and code generation scope. //////
 import com.stanfy.helium.handler.codegen.java.constants.ConstantNameConverter
 
 import javax.lang.model.element.Modifier
 
 helium {
-  specification file('src/main/java/com/stanfy/helium/server/spec/public.api')
+  specification file('src/api/public.api')
 
   sourceGen {
-    def sourceOut = file("src/main/api")
+    def sourceOut = file("src/generated")
 
     entities {
       output = file("$sourceOut")
@@ -65,5 +103,9 @@ helium {
         packageName = "com.stanfy.hellium.server.api"
       }
     }
+  }
+
+  variables {
+    endpointLocation project.endpoint
   }
 }

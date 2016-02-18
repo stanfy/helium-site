@@ -1,0 +1,36 @@
+language: java
+
+jdk:
+  - oraclejdk7
+  - openjdk7
+
+sudo: false
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+env:
+  global:
+  - JAVA_OPTS=-XX:MaxPermSize=1024m
+
+git:
+  depth: 5
+
+install:
+- ./gradlew -s clean assemble check
+
+##################################################
+### Run Helium tests to check server behaviour ###
+script:
+# Start the dev server on localhost:8080
+- ./gradlew appengineRun &
+- ./gradlew -s --continue checkApiBehaviour
+
+# Stop the dev server
+after_script:
+- ./gradlew -s appengineStop
