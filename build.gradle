@@ -56,10 +56,10 @@ import com.stanfy.helium.handler.codegen.java.constants.ConstantNameConverter
 import javax.lang.model.element.Modifier
 
 helium {
-  specification file('src/main/java/com/stanfy/helium/server/spec/public.api')
+  specification file('src/api/public.api')
 
   sourceGen {
-    def sourceOut = file("src/main/api")
+    def sourceOut = file("src/generated")
 
     entities {
       output = file("$sourceOut")
