@@ -23,12 +23,13 @@ git:
 
 install:
 - ./gradlew -s clean assemble check
+- ./gradlew appengineRun > /dev/null &
+- sleep 7 # TODO: Replace with something like a connection ping.
 
 ##################################################
 ### Run Helium tests to check server behaviour ###
 script:
 # Start the dev server on localhost:8080
-- ./gradlew appengineRun &
 - ./gradlew -s --continue checkApiBehaviour
 
 # Stop the dev server
