@@ -1,0 +1,200 @@
+note 'Specification for HelliumServer public API'
+
+def DATA_UNIQUE_KEY = "sm3243dgb357y"
+def DATA_UNIQUE_KEY_2 = "AAsmsdg23327y"
+
+type 'Data' message {
+  string_data 'string'
+  numeric_data 'int32' optional
+  boolean_truth 'bool'
+}
+
+type 'ReturnedData' message {
+  data 'Data' optional
+}
+
+service {
+
+  name 'HelliumServer'
+
+  version '0.1'
+  location 'http://helium-1222.appspot.com/'
+  //location 'http://localhost:8080'
+
+  // API DECLARATION START
+  //////////////////////////////////////
+  get 'data/@id' spec {
+      name 'Get stored data.'
+      description 'Retrieve stored data information by unique ID'
+      response 'ReturnedData'
+  }
+
+  post 'data/@id' spec {
+      name 'Post data object.'
+      description 'Sends data object to server. Saves this data by specified unique ID. Returns same object that was send'
+      body 'Data'
+      response 'Data'
+  }
+
+  put 'data/@id' spec {
+      name 'Store data object.'
+      description 'Saves data object by specified ID'
+      body 'Data'
+  }
+
+  delete 'data/@id' spec {
+      name 'Delete stored data.'
+      description 'Deletes earlier stored data object from server by specified ID'
+  }
+  //////////////////////////////////////
+  // API DECLARATION END
+
+
+  // TESTS FOR API
+  // Each behaviour begins with 'describe'
+  /////////////////////////////////////
+  describe "Could retrieve/delete stored data." spec {
+
+      beforeEach {
+        def response = service.put 'data/@id' with {
+            path { id DATA_UNIQUE_KEY }
+            body {
+                string_data 'some important info about object'
+                numeric_data 15
+                boolean_truth false
+            }
+        }
+
+        response.mustSucceed()
+      }
+
+      it("Retrieve data with \'get\'.") {
+        def response = service.get 'data/@id' with {
+            path { id DATA_UNIQUE_KEY }
+        }
+
+        response.mustSucceed()
+        assert response.body.data.string_data == 'some important info about object'
+        assert response.body.data.numeric_data == 15
+        assert response.body.data.boolean_truth == false
+      }
+
+      it("Delete data with \'delete\'.") {
+        def response = service.delete 'data/@id' with {
+            path { id DATA_UNIQUE_KEY }
+        }
+
+        response.mustSucceed()
+      }
+
+      // Cleanup.
+      afterEach {
+        def response = service.delete 'data/@id' with {
+            path { id DATA_UNIQUE_KEY }
+        }
+
+        response.mustSucceed()
+      }
+  }
+
+  describe "Can't retrieve deleted information." spec {
+
+      beforeEach {
+        def response = service.put 'data/@id' with {
+            path { id DATA_UNIQUE_KEY_2 }
+            body {
+                string_data 'Another super important data.'
+                numeric_data 15
+                boolean_truth false
+            }
+        }
+
+        response.mustSucceed()
+      }
+
+      describe 'delete/retrieve actions' spec {
+
+          beforeEach {
+            def response = service.delete 'data/@id' with {
+                path { id DATA_UNIQUE_KEY_2 }
+            }
+
+            response.mustSucceed()
+          }
+
+          it("Try to retrieve data with \'get\'.") {
+            def response = service.get 'data/@id' with {
+                path { id DATA_UNIQUE_KEY_2 }
+            }
+
+            response.mustSucceed()
+            assert response.body.data == null
+          }
+      }
+
+      // Cleanup.
+      afterEach {
+        def response = service.delete 'data/@id' with {
+            path { id DATA_UNIQUE_KEY_2 }
+        }
+
+        response.mustSucceed()
+      }
+  }
+
+  describe "Post command could override earlier saved data." spec {
+      beforeEach {
+        def response = service.post 'data/@id' with {
+            path { id DATA_UNIQUE_KEY }
+            body {
+                string_data 'Answer to life universe and everything.'
+                numeric_data 42
+                boolean_truth false
+            }
+        }
+
+        response.mustSucceed()
+        assert response.body.string_data == 'Answer to life universe and everything.'
+        assert response.body.numeric_data == 42
+        assert response.body.boolean_truth == false
+      }
+
+      describe "Another \'post\' with same ID should override stored data." spec {
+          beforeEach {
+            def response = service.post 'data/@id' with {
+                path { id DATA_UNIQUE_KEY }
+                body {
+                    string_data 'Another answer to life.'
+                    numeric_data 45
+                    boolean_truth true
+                }
+            }
+
+            response.mustSucceed()
+            assert response.body.string_data == 'Another answer to life.'
+            assert response.body.numeric_data == 45
+            assert response.body.boolean_truth == true
+          }
+
+          it('Retrieve last saved data with \'get\' command.') {
+            def response = service.get 'data/@id' with {
+                path { id DATA_UNIQUE_KEY }
+            }
+
+            response.mustSucceed()
+            assert response.body.data.string_data == 'Another answer to life.'
+            assert response.body.data.numeric_data == 45
+            assert response.body.data.boolean_truth == true
+          }
+      }
+
+      // Cleanup.
+      afterEach {
+        def response = service.delete 'data/@id' with {
+            path { id DATA_UNIQUE_KEY }
+        }
+
+        response.mustSucceed()
+      }
+  }
+}
