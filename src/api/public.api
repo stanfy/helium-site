@@ -18,8 +18,7 @@ service {
   name 'HelliumServer'
 
   version '0.1'
-  location 'http://helium-1222.appspot.com/'
-  //location 'http://localhost:8080'
+  location "$endpointLocation"
 
   // API DECLARATION START
   //////////////////////////////////////

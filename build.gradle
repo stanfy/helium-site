@@ -28,6 +28,17 @@ dependencies {
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
 
+ext {
+  // Distinguish development end CloudEngine endpoints.
+  if (project.hasProperty('endpoint')) {
+    if (!project.endpoint.startsWith('http')) {
+      throw new GradleException("Bad endpoint name '$endpoint'. Should start with 'http://...'")
+    }
+  } else {
+    endpoint = 'http://localhost:8080'
+  }
+}
+
 appengine {
 
   downloadSdk = true
@@ -92,5 +103,9 @@ helium {
         packageName = "com.stanfy.hellium.server.api"
       }
     }
+  }
+
+  variables {
+    endpointLocation project.endpoint
   }
 }

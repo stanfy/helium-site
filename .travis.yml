@@ -22,8 +22,15 @@ git:
   depth: 5
 
 install:
-- ./gradlew -q -s clean assemble
-- ./gradlew appengineRun &
+- ./gradlew -s clean assemble check
 
+##################################################
+### Run Helium tests to check server behaviour ###
 script:
-- ./gradlew -s --continue check checkApiBehaviour appengineStop
+# Start the dev server on localhost:8080
+- ./gradlew appengineRun &
+- ./gradlew -s --continue checkApiBehaviour
+
+# Stop the dev server
+after_script:
+- ./gradlew -s appengineStop
