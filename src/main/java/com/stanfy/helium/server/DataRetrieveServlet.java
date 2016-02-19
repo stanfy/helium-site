@@ -95,6 +95,7 @@ public class DataRetrieveServlet extends HttpServlet {
     String dataId = null;
     if (path.startsWith(PATH_DATA)) {
       dataId = path.replaceFirst(PATH_DATA, "");
+      // Check that requests in form "http://host/data/@id" have @id.
       if (dataId.isEmpty()) {
         return null;
       }
