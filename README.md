@@ -1,6 +1,12 @@
 Server for testing Hellium features
 -----------------------------------
 
+**API specification**
+ 
+Our smart server implements API specification that was written with [Helium](https://github.com/stanfy/helium).
+
+Documentation about API you could read [here](http://helium-1222.appspot.com/spec/spec.html).
+
 **Development:**
 
 To run development server execute `./gradlew appengineRun` . 
