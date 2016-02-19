@@ -15,7 +15,7 @@ type 'ReturnedData' message {
 
 service {
 
-  name 'HelliumServer'
+  name 'Example of API specified with Helium'
 
   version '0.1'
   location "$endpointLocation"
