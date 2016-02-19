@@ -13,19 +13,20 @@ import java.util.HashMap;
 
 public class DataRetrieveServlet extends HttpServlet {
 
-  private static final HashMap<String, Data> STORE = new HashMap<>(500);
+  public static final int INITIAL_CAPACITY = 500;
+  private static final HashMap<String, Data> STORE = new HashMap<>(INITIAL_CAPACITY);
   private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+  private static final String JSON_CONTENT_TYPE = "application/json";
 
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
     String dataId = getDataId(req);
 
     Data data = STORE.get(dataId);
     String jsonData = buildResponse(data);
 
+    setContentType(resp);
     putClientResponse(resp, jsonData);
-    respondSuccess(resp);
   }
 
   @Override
@@ -36,8 +37,8 @@ public class DataRetrieveServlet extends HttpServlet {
     STORE.put(dataId, requestData);
     String jsonData = GSON.toJson(requestData);
 
+    setContentType(resp);
     putClientResponse(resp, jsonData);
-    respondSuccess(resp);
   }
 
   @Override
@@ -45,7 +46,7 @@ public class DataRetrieveServlet extends HttpServlet {
     String dataId = getDataId(req);
     STORE.remove(dataId);
 
-    respondSuccess(resp);
+    setContentType(resp);
   }
 
   @Override
@@ -55,7 +56,7 @@ public class DataRetrieveServlet extends HttpServlet {
     String dataId = getDataId(req);
 
     STORE.put(dataId, requestData);
-    respondSuccess(resp);
+    setContentType(resp);
   }
 
   private String buildResponse(final Data data) {
@@ -74,8 +75,7 @@ public class DataRetrieveServlet extends HttpServlet {
     return req.getPathInfo().replaceFirst("/", "");
   }
 
-  private void respondSuccess(HttpServletResponse resp) {
-    resp.setContentType("application/json");
-    resp.setStatus(HttpServletResponse.SC_OK);
+  private void setContentType(HttpServletResponse resp) {
+    resp.setContentType(JSON_CONTENT_TYPE);
   }
 }
