@@ -2,6 +2,8 @@ package com.stanfy.helium.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.ObjectifyService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,14 +11,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 
 public class DataRetrieveServlet extends HttpServlet {
 
-  private static final int INITIAL_CAPACITY = 500;
   private static final String JSON_CONTENT_TYPE = "application/json";
   private static final String PATH_DATA = "/data/";
-  private static final HashMap<String, Data> STORE = new HashMap<>(INITIAL_CAPACITY);
   private static final Gson GSON = new GsonBuilder().serializeNulls().create();
 
   @Override
@@ -25,7 +24,7 @@ public class DataRetrieveServlet extends HttpServlet {
 
     String dataId = getDataId(req);
     if (dataId != null) {
-      Data data = STORE.get(dataId);
+      Data data = loadData(dataId);
       String jsonData = buildResponse(data);
       putClientResponse(resp, jsonData);
     } else {
@@ -39,9 +38,7 @@ public class DataRetrieveServlet extends HttpServlet {
 
     String dataId = getDataId(req);
     if (dataId != null) {
-      Data requestData = GSON.fromJson(req.getReader(), Data.class);
-      STORE.put(dataId, requestData);
-      String jsonData = GSON.toJson(requestData);
+      String jsonData = saveData(req, dataId);
       putClientResponse(resp, jsonData);
     } else {
       setErrorStatusCode(resp);
@@ -54,7 +51,8 @@ public class DataRetrieveServlet extends HttpServlet {
 
     String dataId = getDataId(req);
     if (dataId != null) {
-      STORE.remove(dataId);
+      Key<Data> dataKey = Key.create(Data.class, dataId);
+      ObjectifyService.ofy().delete().key(dataKey);
     } else {
       setErrorStatusCode(resp);
     }
@@ -66,11 +64,25 @@ public class DataRetrieveServlet extends HttpServlet {
 
     String dataId = getDataId(req);
     if (dataId != null) {
-      Data requestData = GSON.fromJson(req.getReader(), Data.class);
-      STORE.put(dataId, requestData);
+      saveData(req, dataId);
     } else {
       setErrorStatusCode(resp);
     }
+  }
+
+  private Data loadData(String dataId) {
+    return ObjectifyService.ofy()
+        .load()
+        .type(Data.class)
+        .id(dataId)
+        .now();
+  }
+
+  private String saveData(final HttpServletRequest req, final String dataId) throws IOException {
+    final Data requestData = GSON.fromJson(req.getReader(), Data.class);
+    requestData.setId(dataId);
+    ObjectifyService.ofy().save().entity(requestData).now();
+    return GSON.toJson(requestData);
   }
 
   private String buildResponse(final Data data) {
