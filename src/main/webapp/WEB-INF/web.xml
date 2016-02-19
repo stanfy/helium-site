@@ -8,6 +8,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>retrieveData</servlet-name>
-    <url-pattern>/data/*</url-pattern>
+    <url-pattern>/*</url-pattern>
   </servlet-mapping>
 </web-app>
